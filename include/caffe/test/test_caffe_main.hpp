@@ -10,6 +10,7 @@
 #include <cstdlib>
 
 #include "caffe/common.hpp"
+#include "caffe/util/io.hpp"
 
 using std::cout;
 using std::endl;
@@ -20,6 +21,7 @@ using std::endl;
   #define CUDA_TEST_DEVICE -1
   #define CMAKE_SOURCE_DIR "src/"
   #define EXAMPLES_SOURCE_DIR "examples/"
+  #define ABS_TEST_DATA_DIR "src/caffe/test/test_data"
   #define CMAKE_EXT ""
 #endif
 
@@ -35,7 +37,8 @@ class MultiDeviceTest : public ::testing::Test {
   MultiDeviceTest() {
     Caffe::set_mode(TypeParam::device);
   }
-  virtual ~MultiDeviceTest() {}
+  // Caffe tests may create some temporary files, here we will do the cleanup.
+  virtual ~MultiDeviceTest() { RemoveCaffeTempDir(); }
 };
 
 typedef ::testing::Types<float, double> TestDtypes;

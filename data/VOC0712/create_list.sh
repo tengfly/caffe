@@ -1,6 +1,6 @@
 #!/bin/bash
 
-root_dir=$HOME/data/VOCdevkit/
+root_dir=$HOME/data/VOC/VOCdevkit/
 sub_dir=ImageSets/Main
 bash_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 for dataset in trainval test
@@ -38,7 +38,7 @@ do
   # Generate image name and size infomation.
   if [ $dataset == "test" ]
   then
-    $bash_dir/../../build/tools/get_image_size $root_dir $dst_file $bash_dir/$dataset"_name_size.txt"
+    $bash_dir/../../ssd/tools/get_image_size $root_dir $dst_file $bash_dir/$dataset"_name_size.txt"
   fi
 
   # Shuffle trainval file.
