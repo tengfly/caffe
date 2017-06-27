@@ -243,7 +243,7 @@ snapshot_dir = "models/VGGNet/VOC0712/{}".format(job_name)
 # Directory which stores the job script and log file.
 job_dir = "jobs/VGGNet/VOC0712/{}".format(job_name)
 # Directory which stores the detection results.
-output_result_dir = "{}/data/VOCdevkit/results/VOC2007/{}/Main".format(os.environ['HOME'], job_name)
+output_result_dir = "{}/data/VOCdevkit/results/VOC2007/{}/Main".format(caffe_root, job_name)
 
 # model definition files.
 train_net_file = "{}/train.prototxt".format(save_dir)
@@ -329,7 +329,7 @@ clip = False
 
 # Solver parameters.
 # Defining which GPUs to use.
-gpus = "0,1,2,3"
+gpus = "0" #,1,2,3"
 gpulist = gpus.split(",")
 num_gpus = len(gpulist)
 
@@ -555,14 +555,14 @@ if remove_old_models:
 # Create job file.
 with open(job_file, 'w') as f:
   f.write('cd {}\n'.format(caffe_root))
-  f.write('./build/tools/caffe train \\\n')
+  f.write('\"ssd\\tools\\release\\caffe train\" \\\n')
   f.write('--solver="{}" \\\n'.format(solver_file))
   f.write(train_src_param)
   if solver_param['solver_mode'] == P.Solver.GPU:
     f.write('--gpu {} 2>&1 | tee {}/{}.log\n'.format(gpus, job_dir, model_name))
   else:
     f.write('2>&1 | tee {}/{}.log\n'.format(job_dir, model_name))
-
+  f.close()
 # Copy the python script to job_dir.
 py_file = os.path.abspath(__file__)
 shutil.copy(py_file, job_dir)

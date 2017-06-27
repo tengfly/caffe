@@ -119,7 +119,7 @@ if __name__ == "__main__":
   # get caffe root directory
   caffe_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
   if anno_type == "detection":
-    cmd = "{}/build/tools/convert_annoset" \
+    cmd = "{}/ssd/tools/release/convert_annoset" \
         " --anno_type={}" \
         " --label_type={}" \
         " --label_map_file={}" \
@@ -139,7 +139,7 @@ if __name__ == "__main__":
             min_dim, max_dim, resize_height, resize_width, backend, shuffle,
             check_size, encode_type, encoded, gray, root_dir, list_file, out_dir)
   elif anno_type == "classification":
-    cmd = "{}/build/tools/convert_annoset" \
+    cmd = "{}/ssd/tools/release/convert_annoset" \
         " --anno_type={}" \
         " --min_dim={}" \
         " --max_dim={}" \
@@ -164,4 +164,10 @@ if __name__ == "__main__":
   link_dir = os.path.join(example_dir, os.path.basename(out_dir))
   if os.path.exists(link_dir):
     os.unlink(link_dir)
-  os.symlink(out_dir, link_dir)
+  #os.symlink(out_dir, link_dir)
+  try:
+	  os.symlink(out_dir, link_dir)
+  except:
+	  import ctypes
+	  kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+	  kdll.CreateSymbolicLinkA(out_dir, link_dir, 0)

@@ -108,8 +108,9 @@ void SampleBBox(const Sampler& sampler, NormalizedBBox* sampled_bbox) {
 
   // Figure out top left coordinates.
   float w_off, h_off;
-  caffe_rng_uniform(1, 0.f, 1 - bbox_width, &w_off);
-  caffe_rng_uniform(1, 0.f, 1 - bbox_height, &h_off);
+  const float resvar = 0.000001;
+  caffe_rng_uniform(1, 0.f, abs(1 - bbox_width)<resvar?0: 1 - bbox_width, &w_off);
+  caffe_rng_uniform(1, 0.f, abs(1 - bbox_height)<resvar?0: 1 - bbox_height, &h_off);
 
   sampled_bbox->set_xmin(w_off);
   sampled_bbox->set_ymin(h_off);
