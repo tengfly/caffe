@@ -79,9 +79,9 @@ resume_training = True
 remove_old_models = False
 
 # The database file for training data. Created by data/VOC0712/create_data.sh
-train_data = "examples/VOC0712/VOC0712_trainval_lmdb"
+train_data = "data/VOC0712/VOCdevkit/VOC0712/lmdb/VOC0712_trainval_lmdb"
 # The database file for testing data. Created by data/VOC0712/create_data.sh
-test_data = "examples/VOC0712/VOC0712_test_lmdb"
+test_data = "data/VOC0712/VOCdevkit/VOC0712/lmdb/VOC0712_test_lmdb"
 # Specify the batch sampler.
 resize_width = 300
 resize_height = 300
@@ -243,7 +243,7 @@ snapshot_dir = "models/VGGNet/VOC0712/{}".format(job_name)
 # Directory which stores the job script and log file.
 job_dir = "jobs/VGGNet/VOC0712/{}".format(job_name)
 # Directory which stores the detection results.
-output_result_dir = "{}/data/VOCdevkit/results/VOC2007/{}/Main".format(caffe_root, job_name)
+output_result_dir = "{}/data/VOC0712/VOCdevkit/results/VOC2007/{}/Main".format(caffe_root, job_name)
 
 # model definition files.
 train_net_file = "{}/train.prototxt".format(save_dir)
@@ -253,7 +253,9 @@ solver_file = "{}/solver.prototxt".format(save_dir)
 # snapshot prefix.
 snapshot_prefix = "{}/{}".format(snapshot_dir, model_name)
 # job script path.
-job_file = "{}/{}.sh".format(job_dir, model_name)
+#job_file = "{}/{}.sh".format(job_dir, model_name)
+#for windows
+job_file = "{}/{}/{}.ps1".format(caffe_root, job_dir, model_name)
 
 # Stores the test image names and sizes. Created by data/VOC0712/create_list.sh
 name_size_file = "data/VOC0712/test_name_size.txt"
@@ -367,12 +369,12 @@ solver_param = {
     'base_lr': base_lr,
     'weight_decay': 0.0005,
     'lr_policy': "multistep",
-    'stepvalue': [80000, 100000, 120000],
+    'stepvalue': [6000, 10000, 12000],
     'gamma': 0.1,
     'momentum': 0.9,
     'iter_size': iter_size,
     'max_iter': 120000,
-    'snapshot': 80000,
+    'snapshot': 60000,
     'display': 10,
     'average_loss': 10,
     'type': "SGD",
@@ -382,7 +384,7 @@ solver_param = {
     'snapshot_after_train': True,
     # Test parameters
     'test_iter': [test_iter],
-    'test_interval': 10000,
+    'test_interval': 1000,
     'eval_type': "detection",
     'ap_version': "11point",
     'test_initialization': False,
@@ -533,10 +535,10 @@ for file in os.listdir(snapshot_dir):
     if iter > max_iter:
       max_iter = iter
 
-train_src_param = '--weights="{}" \\\n'.format(pretrain_model)
+train_src_param = '--weights={} '.format(pretrain_model)
 if resume_training:
   if max_iter > 0:
-    train_src_param = '--snapshot="{}_iter_{}.solverstate" \\\n'.format(snapshot_prefix, max_iter)
+    train_src_param = '--snapshot={}_iter_{}.solverstate '.format(snapshot_prefix, max_iter)
 
 if remove_old_models:
   # Remove any snapshots smaller than max_iter.
@@ -555,8 +557,8 @@ if remove_old_models:
 # Create job file.
 with open(job_file, 'w') as f:
   f.write('cd {}\n'.format(caffe_root))
-  f.write('\"ssd\\tools\\release\\caffe train\" \\\n')
-  f.write('--solver="{}" \\\n'.format(solver_file))
+  f.write('ssd\\tools\\release\\caffe train ')
+  f.write('--solver={} '.format(solver_file))
   f.write(train_src_param)
   if solver_param['solver_mode'] == P.Solver.GPU:
     f.write('--gpu {} 2>&1 | tee {}/{}.log\n'.format(gpus, job_dir, model_name))
@@ -569,5 +571,6 @@ shutil.copy(py_file, job_dir)
 
 # Run the job.
 os.chmod(job_file, stat.S_IRWXU)
+print('{}'.format(job_file))
 if run_soon:
-  subprocess.call(job_file, shell=True)
+    subprocess.call(["C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",job_file], shell=True)

@@ -166,8 +166,8 @@ if __name__ == "__main__":
     os.unlink(link_dir)
   #os.symlink(out_dir, link_dir)
   try:
-	  os.symlink(out_dir, link_dir)
+    os.symlink(out_dir, link_dir)
   except:
-	  import ctypes
-	  kdll = ctypes.windll.LoadLibrary("kernel32.dll")
-	  kdll.CreateSymbolicLinkA(out_dir, link_dir, 0)
+    import ctypes
+    kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+    kdll.CreateSymbolicLinkA(out_dir, link_dir, 0)
