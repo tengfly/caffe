@@ -69,12 +69,12 @@ Makefile.config
 # 1. reference, and not casually committed
 # 2. custom, and live on their own unless they're deliberated contributed
 data/*
-#models/*
-#*.caffemodel
-#*.caffemodel.h5
-#*.solverstate
-#*.solverstate.h5
-#*.binaryproto
+models/*
+*.caffemodel
+*.caffemodel.h5
+*.solverstate
+*.solverstate.h5
+*.binaryproto
 *leveldb
 *lmdb
 
@@ -89,6 +89,7 @@ python/caffe/proto/
 cmake_build
 .cmake_build
 ssd
+ssd_cudnn
 
 # Generated documentation
 docs/_site
@@ -116,3 +117,9 @@ MANIFEST-*
 
 #backup files
 *.bak
+
+#jobs
+jobs/*
+
+#result
+result
