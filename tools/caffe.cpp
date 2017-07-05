@@ -248,23 +248,19 @@ int train() {
   }
 
   LOG(INFO) << "Starting Optimization";
-//  if (gpus.size() > 1) {
-//#ifdef USE_NCCL
-//    caffe::NCCL<float> nccl(solver);
-//    nccl.Run(gpus, FLAGS_snapshot.size() > 0 ? FLAGS_snapshot.c_str() : NULL);
-//#else
-//    LOG(FATAL) << "Multi-GPU execution not available - rebuild with USE_NCCL";
-//#endif
-//  } else {
-//    solver->Solve();
-//  }
   if (gpus.size() > 1) {
-	  caffe::P2PSync<float> sync(solver, NULL, solver->param());
-	  sync.Run(gpus);
-  }
-  else {
-	  LOG(INFO) << "Starting Optimization";
-	  solver->Solve();
+#ifdef USE_NCCL
+	LOG(INFO) << "Multi-GPU execution with NCCL";
+    caffe::NCCL<float> nccl(solver);
+    nccl.Run(gpus, FLAGS_snapshot.size() > 0 ? FLAGS_snapshot.c_str() : NULL);
+#else
+    //LOG(FATAL) << "Multi-GPU execution not available - rebuild with USE_NCCL";
+	LOG(INFO) << "Multi-GPU execution with P2PSync";
+	caffe::P2PSync<float> sync(solver, NULL, solver->param());
+    sync.Run(gpus);
+#endif
+  } else {
+    solver->Solve();
   }
   LOG(INFO) << "Optimization Done.";
   return 0;
