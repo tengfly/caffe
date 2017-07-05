@@ -250,10 +250,14 @@ int train() {
   LOG(INFO) << "Starting Optimization";
   if (gpus.size() > 1) {
 #ifdef USE_NCCL
+	LOG(INFO) << "Multi-GPU execution with NCCL";
     caffe::NCCL<float> nccl(solver);
     nccl.Run(gpus, FLAGS_snapshot.size() > 0 ? FLAGS_snapshot.c_str() : NULL);
 #else
-    LOG(FATAL) << "Multi-GPU execution not available - rebuild with USE_NCCL";
+    //LOG(FATAL) << "Multi-GPU execution not available - rebuild with USE_NCCL";
+	LOG(INFO) << "Multi-GPU execution with P2PSync";
+	caffe::P2PSync<float> sync(solver, NULL, solver->param());
+    sync.Run(gpus);
 #endif
   } else {
     solver->Solve();

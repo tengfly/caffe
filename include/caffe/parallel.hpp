@@ -13,6 +13,11 @@
 #include "caffe/solver.hpp"
 #include "caffe/syncedmem.hpp"
 #include "caffe/util/blocking_queue.hpp"
+#ifdef USE_NCCL
+#include <boost/thread.hpp>
+#include <string>
+#include "caffe/util/nccl.hpp"
+#endif // USE_NCCL
 
 namespace caffe {
 
@@ -58,6 +63,63 @@ class GPUParams : public Params<Dtype> {
   using Params<Dtype>::data_;
   using Params<Dtype>::diff_;
 };
+
+#ifdef USE_NCCL
+template<typename Dtype>
+class NCCL : public GPUParams<Dtype>,
+             public Solver<Dtype>::Callback,
+             public Net<Dtype>::Callback {
+ public:
+  /**
+   * Single process version.
+   */
+  explicit NCCL(shared_ptr<Solver<Dtype> > solver);
+  /**
+   * In multi-process settings, first create a NCCL id (new_uid), then
+   * pass it to each process to create connected instances.
+   */
+  NCCL(shared_ptr<Solver<Dtype> > solver, const string& uid);
+  ~NCCL();
+
+  boost::barrier* barrier();
+  void set_barrier(boost::barrier* value);
+
+  /**
+   * In single process settings, create instances without uids and
+   * call this to connect them.
+   */
+  static void InitSingleProcess(vector<NCCL<Dtype>*>* nccls);
+
+  static string new_uid();
+
+  /**
+   * Broadcast weights from rank 0 other solvers.
+   */
+  void Broadcast();
+
+  /**
+   * Single process multi-GPU.
+   */
+  void Run(const vector<int>& gpus, const char* restore);
+
+ protected:
+  void Init();
+  void on_start() {}
+  void run(int layer);  // Net callback
+  void on_gradients_ready();
+
+  ncclComm_t comm_;
+  cudaStream_t stream_;
+
+  shared_ptr<Solver<Dtype> > solver_;
+  // Should not be necessary, https://github.com/NVIDIA/nccl/issues/37
+  boost::barrier* barrier_;
+  using Params<Dtype>::size_;
+  using Params<Dtype>::data_;
+  using Params<Dtype>::diff_;
+};
+
+#endif // USE_NCCL
 
 class DevicePair {
  public:
@@ -116,6 +178,7 @@ class P2PSync : public GPUParams<Dtype>, public Solver<Dtype>::Callback,
   using Params<Dtype>::diff_;
 };
 
+
 }  // namespace caffe
 
-#endif
+#endif // header
