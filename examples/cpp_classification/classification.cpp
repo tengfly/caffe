@@ -118,33 +118,48 @@ std::vector<Prediction> Classifier::Classify(const cv::Mat& img, int N) {
 
 /* Load the mean file in binaryproto format. */
 void Classifier::SetMean(const string& mean_file) {
-  BlobProto blob_proto;
-  ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
+	if (!mean_.empty())
+	{
+	  BlobProto blob_proto;
+	  ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
 
-  /* Convert from BlobProto to Blob<float> */
-  Blob<float> mean_blob;
-  mean_blob.FromProto(blob_proto);
-  CHECK_EQ(mean_blob.channels(), num_channels_)
-    << "Number of channels of mean file doesn't match input layer.";
+	  /* Convert from BlobProto to Blob<float> */
+	  Blob<float> mean_blob;
+	  mean_blob.FromProto(blob_proto);
+	  CHECK_EQ(mean_blob.channels(), num_channels_)
+		<< "Number of channels of mean file doesn't match input layer.";
 
-  /* The format of the mean file is planar 32-bit float BGR or grayscale. */
-  std::vector<cv::Mat> channels;
-  float* data = mean_blob.mutable_cpu_data();
-  for (int i = 0; i < num_channels_; ++i) {
-    /* Extract an individual channel. */
-    cv::Mat channel(mean_blob.height(), mean_blob.width(), CV_32FC1, data);
-    channels.push_back(channel);
-    data += mean_blob.height() * mean_blob.width();
+	  /* The format of the mean file is planar 32-bit float BGR or grayscale. */
+	  std::vector<cv::Mat> channels;
+	  float* data = mean_blob.mutable_cpu_data();
+	  for (int i = 0; i < num_channels_; ++i) {
+		/* Extract an individual channel. */
+		cv::Mat channel(mean_blob.height(), mean_blob.width(), CV_32FC1, data);
+		channels.push_back(channel);
+		data += mean_blob.height() * mean_blob.width();
+	  }
+
+	  /* Merge the separate channels into a single image. */
+	  cv::Mat mean;
+	  cv::merge(channels, mean);
+
+	  /* Compute the global mean pixel value and create a mean image
+	   * filled with this value. */
+	  cv::Scalar channel_mean = cv::mean(mean);
+	  mean_ = cv::Mat(input_geometry_, mean.type(), channel_mean);
+	}
+
+	else {
+	  const vector<int> mean_value = { 104, 117, 123 };
+	  std::vector<cv::Mat> channels;
+	  for (int i = 0; i < num_channels_; ++i) {
+		  /* Extract an individual channel. */
+		  cv::Mat channel(input_geometry_.height, input_geometry_.width, CV_32FC1,
+			  cv::Scalar(mean_value[i]));
+		  channels.push_back(channel);
+	  }
+	  cv::merge(channels, mean_);
   }
-
-  /* Merge the separate channels into a single image. */
-  cv::Mat mean;
-  cv::merge(channels, mean);
-
-  /* Compute the global mean pixel value and create a mean image
-   * filled with this value. */
-  cv::Scalar channel_mean = cv::mean(mean);
-  mean_ = cv::Mat(input_geometry_, mean.type(), channel_mean);
 }
 
 std::vector<float> Classifier::Predict(const cv::Mat& img) {
