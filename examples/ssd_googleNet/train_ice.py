@@ -104,29 +104,34 @@ if __name__=='__main__':
 
     # Find most recent snapshot.
     max_iter = 0
+    max_iter_snapshot_prefix = snapshot_prefix
     for file in os.listdir(snapshot_dir):
       if file.endswith(".solverstate"):
         basename = os.path.splitext(file)[0]
-        iter = int(basename.split("{}_iter_".format(model_name))[1])
+        #iter = int(basename.split("{}_iter_".format(model_name))[1])
+        iter = int(basename.split("_iter_")[1])
         if iter > max_iter:
           max_iter = iter
+          max_iter_snapshot_prefix = basename.split("_iter_")[0]
 
     train_src_param = '--weights="{}" '.format(pretrain_model)
     if resume_training:
       if max_iter > 0:
-        train_src_param = '--snapshot="{}_iter_{}.solverstate" '.format(snapshot_prefix, max_iter)
+        train_src_param = '--snapshot="{}/{}_iter_{}.solverstate" '.format(snapshot_dir, max_iter_snapshot_prefix, max_iter)
 
     if remove_old_models:
       # Remove any snapshots smaller than max_iter.
       for file in os.listdir(snapshot_dir):
         if file.endswith(".solverstate"):
           basename = os.path.splitext(file)[0]
-          iter = int(basename.split("{}_iter_".format(model_name))[1])
+          #iter = int(basename.split("{}_iter_".format(model_name))[1])
+          iter = int(basename.split("_iter_")[1])
           if max_iter > iter:
             os.remove("{}/{}".format(snapshot_dir, file))
         if file.endswith(".caffemodel"):
           basename = os.path.splitext(file)[0]
-          iter = int(basename.split("{}_iter_".format(model_name))[1])
+          #iter = int(basename.split("{}_iter_".format(model_name))[1])
+          iter = int(basename.split("_iter_")[1])
           if max_iter > iter:
             os.remove("{}/{}".format(snapshot_dir, file))
 
