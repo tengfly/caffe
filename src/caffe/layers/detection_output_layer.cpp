@@ -201,6 +201,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
   GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
 
   // Decode all loc predictions to bboxes.
+  // Comment by Ke Chen: From loc relative to prior box to loc relative to image
   vector<LabelBBox> all_decode_bboxes;
   const bool clip_bbox = false;
   DecodeBBoxesAll(all_loc_preds, prior_bboxes, prior_variances, num,

@@ -4,8 +4,8 @@
 #     caffe.log.test (columns: '#Iters Seconds TestAccuracy TestLoss')
 #     caffe.log.train (columns: '#Iters Seconds TrainingLoss LearningRate')
 
-echo "keche print"
-rm aux.txt aux0.txt aux1.txt aux2.txt aux3.txt aux4.txt rts.log.*
+#echo "keche print"
+#rm aux.txt aux0.txt aux1.txt aux2.txt aux3.txt aux4.txt rts.log.*
 # get the dirname of the script
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
