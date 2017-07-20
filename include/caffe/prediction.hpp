@@ -7,17 +7,6 @@
 #include <string>
 #include <vector>
 
-#ifdef _MSC_VER
-
-#ifdef EXPORT_API
-#define __declspec(dllexport)   
-#else
-#define __declspec(dllimport) 
-#endif   
-#else
-#define DLL_API
-#endif
-
 namespace caffe
 {
 	using std::string;

@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package objectDetect;
+
+message Item {
+  required string name = 1;
+  required int32 label = 2;
+  optional string display_name = 3;
+}
+
+message LabelMap {
+  repeated Item item = 1;
+}

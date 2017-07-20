@@ -2,6 +2,7 @@
 //
 
 #include <caffe/prediction.hpp>
+#include <caffe/include_symbols.hpp>
 #include <opencv2/opencv.hpp>
 #include <Windows.h>
 #include <iostream>
