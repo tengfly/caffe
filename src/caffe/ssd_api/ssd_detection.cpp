@@ -46,12 +46,13 @@ namespace caffe {
 	{
 		string path = model_path;
 		gpuid = gpu_id;
-		const string& model_file = path + "/deploy.prototxt";
-		const string& weights_file = path + "/model.caffemodel";
-		const string& labelmap_file = path + "/labelmap.prototxt";
-		const string& mean_file = path + "/mean.binaryproto";
-		//const string& mean_value = "104, 117, 123";
-		myssd = (void *)(new Predictor(model_file, weights_file, mean_file, ""));
+		const string model_file = path + "/deploy.prototxt";
+		const string weights_file = path + "/model.caffemodel";
+		const string labelmap_file = path + "/labelmap.prototxt";
+		const string mean_file = "";// path + "/mean.binaryproto";
+		const string label_file = "";
+		//const string& mean_value = "104, 117, 123";		
+		myssd = (void *)(new Predictor(model_file, weights_file, mean_file, label_file));
 		objects = new DetectedObjects();
 		objects->objects = new DetectedObject[MAX_OBJ_COUNT];
 

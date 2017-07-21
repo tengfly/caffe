@@ -116,7 +116,7 @@ namespace caffe
 
 	/* Load the mean file in binaryproto format. */
 	void Predictor::SetMean(const string& mean_file) {
-		if (!mean_.empty())
+		if (!mean_file.empty())
 		{
 			BlobProto blob_proto;
 			ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);

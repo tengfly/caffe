@@ -1,6 +1,6 @@
 // TestCaffe.cpp : Defines the entry point for the console application.
 //
-
+#include <caffe/prediction.hpp>
 #include <caffe/ssd_detection.hpp>
 #include <caffe/include_symbols.hpp>
 #include <opencv2/opencv.hpp>
@@ -26,18 +26,13 @@ long long milliseconds_now() {
 
 int main() //_tmain(int argc, _TCHAR* argv[])
 {
-	string modelpath = "E:\\code\\xiaoice\\Model\\model_ssd_coco300";
-
-	string imagefile = "examples\\images\\heros.jpg";
-	Mat img = imread(imagefile);
-	vector<string> blobnames;
-	vector<vector<float>> blobdata;
-	vector<vector<int>> blobshapes;
+	string modelpath = "E:/code/caffe/modelzoo/msra-ssd-chunyu";
 	ssd_detector ssddetector;
 	ssddetector.detect_init(modelpath.c_str(), 3);
 
+	string imagefile = "examples/images/heros.jpg";
+	Mat img = imread(imagefile);
 	const DetectedObjects* ssdresult = ssddetector.detect(img.data, img.size().height, img.size().width, 0.50);
-
 
 	int number = ssdresult->number;
 	//draw the bounding box into the original image
@@ -50,9 +45,9 @@ int main() //_tmain(int argc, _TCHAR* argv[])
 	namedWindow(winname, CV_WINDOW_AUTOSIZE);
 	imshow(winname, img);
 	waitKey(0);
+
+
 	ssddetector.detect_stop();
 		
 	return 0;
 }
-
-

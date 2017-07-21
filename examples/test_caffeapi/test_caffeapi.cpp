@@ -27,14 +27,10 @@ long long milliseconds_now() {
 int main() //_tmain(int argc, _TCHAR* argv[])
 {
 	string modelpath = "models\\bvlc_reference_caffenet";
-	//string modelpath = "E:\\code\\xiaoice\\ImageML\\private\\Src\\XiaoiceSense\\ObjectDetection\\Model\\Temp\\vggmodel";
-	//string modelpath = "E:\\code\\xiaoice\\ImageML\\private\\Src\\XiaoiceSense\\ObjectDetection\\Model\\Temp\\model_500";
-	//string modelpath = "E:\\code\\xiaoice\\ImageML\\private\\Src\\XiaoiceSense\\ObjectDetection\\Model\\Temp\\models_VGGNet_coco_SSD_300x300\\models\\VGGNet\\coco\\SSD_300x300";
 	string model_proto = modelpath + "\\deploy.prototxt";
 	string model_weight = modelpath + "\\model.caffemodel";
 	string mean_file = "";
 	string label_file = modelpath + "\\synset_words.txt";
-	//string imagefile = "E:\\code\\xiaoice\\ImageML\\private\\Src\\XiaoiceSense\\Apps\\FaceCameraV2\\CameraCapture.Virtual\\data\\frame.jpg";
 	string imagefile = "examples\\images\\cat.jpg";
 	Mat img = imread(imagefile);
 	vector<string> blobnames;

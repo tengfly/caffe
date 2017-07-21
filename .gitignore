@@ -89,7 +89,8 @@ python/caffe/proto/
 cmake_build
 .cmake_build
 ssd
-ssd_cudnn
+ssd_*
+build_test*
 
 # Generated documentation
 docs/_site
