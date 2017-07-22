@@ -10,13 +10,28 @@
 #include <caffe/proto/labelmap.pb.h>
 #include <google/protobuf/message.h>
 #include <caffe/ssd_detection.hpp>
+//#include <caffe/include_symbols.hpp>
 
 using namespace std;
+using namespace cv;
 using cv::Mat;
 using namespace objectDetect;
 using namespace ssdnative;
 
 namespace caffe {
+	long long milliseconds_now() {
+		static LARGE_INTEGER s_frequency;
+		static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
+		if (s_use_qpc) {
+			LARGE_INTEGER now;
+			QueryPerformanceCounter(&now);
+			return (1000LL * now.QuadPart) / s_frequency.QuadPart;
+		}
+		else {
+			return GetTickCount();
+		}
+	}
+
 	void OutputDebugPrintf(const char * strOutputString, ...)
 	{
 		char strBuffer[4096] = { 0 };
@@ -58,18 +73,22 @@ namespace caffe {
 
 		// Verify that the version of the library that we linked against is
 		// compatible with the version of the headers we compiled against.
-		OutputDebugPrintf("Load label map.");
-		GOOGLE_PROTOBUF_VERIFY_VERSION;
-		LabelMap label_map;
-		label_dic = (void *)(new map<int, string>());
-		if (ReadProtoFromTextFile(labelmap_file, &label_map)) {
-			ListItem(label_map, *((map<int, string> *)label_dic));
+		if (!labelmap_file.empty())
+		{
+			OutputDebugPrintf("Load label map.");
+
+			GOOGLE_PROTOBUF_VERIFY_VERSION;
+			LabelMap label_map;
+			label_dic = (void *)(new map<int, string>());
+			if (ReadProtoFromTextFile(labelmap_file, &label_map)) {
+				ListItem(label_map, *((map<int, string> *)label_dic));
+			}
+			else {
+				OutputDebugPrintf("File not found!");
+			}
+			// Optional:  Delete all global objects allocated by libprotobuf.
+			google::protobuf::ShutdownProtobufLibrary();
 		}
-		else {
-			OutputDebugPrintf("File not found!");
-		}
-		// Optional:  Delete all global objects allocated by libprotobuf.
-		google::protobuf::ShutdownProtobufLibrary();
 		//for (int i = 0; i < MAX_OBJ_COUNT; i++)
 		//{
 		//	objects->objects->label = new char[MAX_LABEL_LEN];
@@ -85,12 +104,19 @@ namespace caffe {
 		//init cpu/gpu mode and device id
 		if (!initialized) {
 			if (Predictor::setDevice(gpuid))
+			{
 				initialized = true;
+			}
 		}
 
 		cv::Mat img = Mat(height, width, CV_8UC3, data);
+		//vector<int> caffeshape = ((Predictor *)myssd)->getInputBlobShape();
+		//resize(img, img, Size(caffeshape[2], caffeshape[3]));
 
+		long long start = milliseconds_now();
 		((Predictor *)myssd)->Predict(img);
+		long long end = milliseconds_now();
+		cout << "Prediction time: " << (int)(end - start) << endl;
 
 		vector<vector<float>> predictions;
 		vector<vector<int>> shapes;
@@ -109,28 +135,11 @@ namespace caffe {
 				continue;
 			}
 			vector<float> detection;
-			for(int j=0;j<7;j++)
-				detection.push_back(prediction[idx+j]);
+			for (int j = 0; j < 7; j++)
+				detection.push_back(prediction[idx + j]);
 			detections.push_back(detection);
 			idx += 7;
 		}
-
-
-		///* Copy the output layer to a std::vector */
-		//Blob<float>* result_blob = net_->output_blobs()[0];
-		//const float* result = result_blob->cpu_data();
-		//const int num_det = result_blob->height();
-		//vector<vector<float> > detections;
-		//for (int k = 0; k < num_det; ++k) {
-		//	if (result[0] == -1) {
-		//		// Skip invalid detection.
-		//		result += 7;
-		//		continue;
-		//	}
-		//	vector<float> detection(result, result + 7);
-		//	detections.push_back(detection);
-		//	result += 7;
-		//}
 
 		objects->number = 0;
 

@@ -9,6 +9,8 @@
 #include <vector>
 //using namespace caffe;  // NOLINT(build/namespaces)
 
+using namespace std;
+
 namespace caffe
 {
 	Predictor::Predictor(const string& model_file,
@@ -62,12 +64,14 @@ namespace caffe
 		if (device_id < 0)
 		{
 			Caffe::set_mode(Caffe::CPU);
+			cout << "Set CPU model." << endl;
 		}
 		else
 		{
 			if (Caffe::CheckDevice(device_id))
 			{
-				Caffe::set_mode(Caffe::CPU);
+				Caffe::set_mode(Caffe::GPU);
+				cout << "Set GPU model." << endl;
 			}
 			else
 				return false;

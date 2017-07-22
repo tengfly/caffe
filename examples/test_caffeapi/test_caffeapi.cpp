@@ -26,7 +26,7 @@ long long milliseconds_now() {
 
 int main() //_tmain(int argc, _TCHAR* argv[])
 {
-	string modelpath = "models\\bvlc_reference_caffenet";
+	string modelpath = "models\\bvlc_vggnet";
 	string model_proto = modelpath + "\\deploy.prototxt";
 	string model_weight = modelpath + "\\model.caffemodel";
 	string mean_file = "";
@@ -57,16 +57,22 @@ int main() //_tmain(int argc, _TCHAR* argv[])
 
 	//	}
 	//}
+	caffert.setDevice(3);
+	while (true)
+	{
+		long long start = milliseconds_now();
+		vector<Prediction> predictions = caffert.Classify(img);
+		long long end = milliseconds_now();
 
-	vector<Prediction> predictions = caffert.Classify(img);
+		cout << "Cost time: " << end - start << endl;
 
-	/* Print the top N predictions. */
-	for (size_t i = 0; i < predictions.size(); ++i) {
-		Prediction p = predictions[i];
-		cout << fixed << setprecision(4) << p.second << " - \""
-			<< p.first << "\"" << endl;
+		/* Print the top N predictions. */
+		for (size_t i = 0; i < predictions.size(); ++i) {
+			Prediction p = predictions[i];
+			cout << fixed << setprecision(4) << p.second << " - \""
+				<< p.first << "\"" << endl;
+		}
 	}
-
 		
 	return 0;
 }

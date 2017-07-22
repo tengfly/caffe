@@ -26,13 +26,22 @@ long long milliseconds_now() {
 
 int main() //_tmain(int argc, _TCHAR* argv[])
 {
-	string modelpath = "E:/code/caffe/modelzoo/msra-ssd-chunyu";
+	string modelpath = "e:/code/caffe/modelzoo/model_ssd_coco300";
 	ssd_detector ssddetector;
 	ssddetector.detect_init(modelpath.c_str(), 3);
 
 	string imagefile = "examples/images/heros.jpg";
 	Mat img = imread(imagefile);
-	const DetectedObjects* ssdresult = ssddetector.detect(img.data, img.size().height, img.size().width, 0.50);
+	const DetectedObjects* ssdresult;
+	while (true)
+	{
+		long long start = milliseconds_now();
+		ssdresult = ssddetector.detect(img.data, img.size().height, img.size().width, 0.50);
+		long long end = milliseconds_now();
+
+		cout << "Cost time: " << end - start << endl;
+	}
+
 
 	int number = ssdresult->number;
 	//draw the bounding box into the original image
@@ -51,3 +60,4 @@ int main() //_tmain(int argc, _TCHAR* argv[])
 		
 	return 0;
 }
+
