@@ -4,7 +4,7 @@ endif()
 
 # Known NVIDIA GPU achitectures Caffe can be compiled for.
 # This list will be used for CUDA_ARCH_NAME = All option
-set(Caffe_known_gpu_archs "20 21(20) 30 35 50 60 61")
+set(Caffe_known_gpu_archs "20 21(20) 30 35 37 50 60 61")
 
 ################################################################################################
 # A function for automatic detection of GPUs installed  (if autodetection is enabled)
@@ -66,9 +66,11 @@ function(caffe_select_nvcc_arch_flags out_variable)
     list(APPEND __archs_names "Auto")
     set(__archs_name_default "Auto")
   endif()
-
+  message(STATUS "info: '__archs_name_default:' (${__archs_name_default})")
+  message(STATUS "info: 'CUDA_ARCH_NAME:' (${CUDA_ARCH_NAME})")
   # set CUDA_ARCH_NAME strings (so it will be seen as dropbox in CMake-Gui)
   set(CUDA_ARCH_NAME ${__archs_name_default} CACHE STRING "Select target NVIDIA GPU achitecture.")
+  message(STATUS "info: 'CUDA_ARCH_NAME:' (${CUDA_ARCH_NAME})")
   set_property( CACHE CUDA_ARCH_NAME PROPERTY STRINGS "" ${__archs_names} )
   mark_as_advanced(CUDA_ARCH_NAME)
 

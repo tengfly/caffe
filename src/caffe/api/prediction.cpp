@@ -71,6 +71,7 @@ namespace caffe
 			if (Caffe::CheckDevice(device_id))
 			{
 				Caffe::set_mode(Caffe::GPU);
+				Caffe::SetDevice(device_id);
 				cout << "Set GPU model." << endl;
 			}
 			else

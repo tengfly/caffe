@@ -9,6 +9,7 @@ namespace caffe
 	struct DetectedObject
 	{
 		char label[MAX_LABEL_LEN];
+		int labelid;
 		float score;
 		int xmin;
 		int ymin;

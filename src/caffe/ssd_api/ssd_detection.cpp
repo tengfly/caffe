@@ -102,11 +102,15 @@ namespace caffe {
 			return NULL;
 
 		//init cpu/gpu mode and device id
-		if (!initialized) {
-			if (Predictor::setDevice(gpuid))
+		//if (!initialized) {
+		//	if (Predictor::setDevice(gpuid))
+		//	{
+		//		initialized = true;
+		//	}
+		//}
+		if (!Predictor::setDevice(gpuid))
 			{
-				initialized = true;
-			}
+			OutputDebugPrintf("Fail to set device to %d", gpuid);
 		}
 
 		cv::Mat img = Mat(height, width, CV_8UC3, data);
@@ -152,6 +156,7 @@ namespace caffe {
 			const float score = d[2];
 			if (score >= confidence_threshold && objects->number < MAX_OBJ_COUNT) {
 				DetectedObject* o = &(objects->objects[objects->number]);
+				o->labelid = static_cast<int>(d[1]);
 				//o->label = new char[label_list[static_cast<int>(d[1])].length()];
 				strcpy_s(o->label, (*((map<int, string>*)label_dic))[static_cast<int>(d[1])].c_str());
 				o->score = score;
@@ -160,7 +165,7 @@ namespace caffe {
 				o->xmax = static_cast<int>(d[5] * img.cols);
 				o->ymax = static_cast<int>(d[6] * img.rows);
 				objects->number++;
-				OutputDebugPrintf("\tLabel: %d, Name: %s", static_cast<int>(d[1]), o->label);
+				OutputDebugPrintf("\tLabel Id: %d, Name: %s", o->labelid, o->label);
 			}
 		}
 		OutputDebugPrintf("Exit detection dll.detect, objects number: %d", objects->number);

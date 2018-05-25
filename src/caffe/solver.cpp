@@ -537,7 +537,23 @@ void Solver<Dtype>::TestDetection(const int test_net_id) {
                 param_.ap_version(), &prec, &rec, &(APs[label]));
       mAP += APs[label];
       if (param_.show_per_class_result()) {
-        LOG(INFO) << "class" << label << ": " << APs[label];
+        LOG(INFO) << "class" << label << " AP: " << APs[label];
+		CHECK(prec.size() == rec.size());
+		int pointnum = 20;
+		int step = prec.size()>pointnum?prec.size() / 20:1;
+		//int startidx = 0;
+		//for (int jj = 0; jj < pointnum;jj++)
+		//{
+		//	for (int ii = startidx; ii < prec.size(); ii++)
+		//		if (rec[ii] > (jj*1.0) / pointnum)
+		//		{
+		//			LOG(INFO) << "class" << label << " Recall " << jj << ": " << rec[ii];
+		//			LOG(INFO) << "class" << label << " Precsion " << jj << ": " << prec[ii];
+		//			startidx = ii + 1;
+		//			break;
+		//		}
+		//}
+
       }
     }
     mAP /= num_pos.size();

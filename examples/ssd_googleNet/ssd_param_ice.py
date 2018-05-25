@@ -16,33 +16,39 @@ def make_dir_if_not_exists(dir):
 
 current_dir = os.getcwd()
 caffe_root = current_dir#osp.join(current_dir, '..')
+data_root = r'D:\OpenImages\rtsDevKit'
+dev_root = r'E:\code\personal\RTS\OpenImages'
 
 #######################Custom-Configured Data#####################
-gpus = "3"
+gpus = "1"
 #experiment param
-dupsmallclass = True
-min_ratio = 20
-nms_thresh = 0.45
+dupallclass = False
+min_ratio = 15
+nms_thresh = 0.3
+batch_size = 32
+pretrain_fromraw = True
 
 job_id = gpus
 resize_height = 300
 resize_width = 300
 use_batchnorm = True
-batch_size = 16
+
 accum_batch_size = 16
 train_on_diff_gt = False
 neg_pos_ratio = 3.0
 
+loc_weight = 0.5
+num_classes = 598
 ##################################################################
 # rts data
-if not dupsmallclass:
-    train_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_raw/rtscoco2017_trainval_lmdb'.format(caffe_root)
-    test_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_raw/rtscoco2017_test_lmdb'.format(caffe_root)
+if dupallclass:
+    train_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_dupallnew/rtscoco2017_trainval_lmdb'.format(data_root)
+    test_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_dupallnew/rtscoco2017_test_lmdb'.format(data_root)
 else:
-    train_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_dup/rtscoco2017_trainval_lmdb'.format(caffe_root)
-    test_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_dup/rtscoco2017_test_lmdb'.format(caffe_root)
+    train_data = '{}/rts2018/lmdb/rts2018_trainval_lmdb'.format(data_root)
+    test_data = '{}/rts2018/lmdb/rts2018_test_lmdb'.format(data_root)
 
-label_map_file = '{}/data/rtscoco2017/labelmap_rts.prototxt'.format(caffe_root)
+label_map_file = '{}/data/labelmap.prototxt'.format(dev_root)
 output_result_dir = "{}/result/ssd_googlenet_bn".format(caffe_root)
 timestr = strftime("%Y-%m-%d", gmtime())
 job_name = "SSD_rts_{}x{}_{}_{}".format(resize_width, resize_height, timestr, job_id)
@@ -56,8 +62,12 @@ model_name = "GOOGLE_{}".format(job_name)
 snapshot_prefix = "{}/{}".format(snapshot_dir, model_name)
 save_dir = "{}/models/GoogleNet/{}".format(caffe_root, job_name)
 make_dir_if_not_exists(save_dir)
-pretrain_model = "{}/models/GoogleNet/init/googlenet_bn_stepsize_6400_iter_1200000.caffemodel".format(caffe_root)
-name_size_file = "data/VOC0712/test_name_size.txt"
+
+if pretrain_fromraw:
+    pretrain_model = "{}/models/GoogleNet/init/googlenet_bn_stepsize_6400_iter_1200000.caffemodel".format(caffe_root)
+else:
+    pretrain_model = "{}/models/GoogleNet/SSD_rts_300x300_2017-07-14_2/GOOGLE_SSD_rts_300x300_2017-07-14_2_iter_180000.caffemodel".format(caffe_root)
+name_size_file = "{}/data/test_name_size.txt".format(dev_root)
 resume_training = True
 mbox_source_layers = ['inception_4a_output', 'inception_4c_output', 'inception_4e_output', 'inception_5b_output', 'inception_6a_output', 'inception_7a_output']
 
@@ -71,19 +81,21 @@ for ratio in xrange(min_ratio, max_ratio + 1, step):
     min_sizes.append(min_dim * ratio / 100.)
     max_sizes.append(min_dim * (ratio + step) / 100.)
 
-if min_ratio == 15:
-    min_sizes = [min_dim * 7 / 100.] + min_sizes
-    max_sizes = [min_dim * 15 / 100.] + max_sizes
-else:
-    min_sizes = [min_dim * 10 / 100.] + min_sizes
-    max_sizes = [min_dim * 20 / 100.] + max_sizes
+# if min_ratio == 15:
+#     min_sizes = [min_dim * 7 / 100.] + min_sizes
+#     max_sizes = [min_dim * 15 / 100.] + max_sizes
+# else:
+#     min_sizes = [min_dim * 10 / 100.] + min_sizes
+#     max_sizes = [min_dim * 20 / 100.] + max_sizes
+
+min_sizes = [min_dim * ((min_ratio)/2) / 100.] + min_sizes
+max_sizes = [min_dim * min_ratio / 100.] + max_sizes
 
 aspect_ratios = [[2], [2, 3], [2, 3], [2, 3], [2], [2]]
 aspect_ratios_flip = True
 prior_variance = [0.1, 0.1, 0.2, 0.2]
 
-loc_weight = 1 
-num_classes = 19
+
 share_location = True
 background_label_id = 0
 code_type = P.PriorBox.CENTER_SIZE
@@ -263,6 +275,7 @@ batch_sampler = [
 test_transform_param = {
 		'crop_size': 300,
         'mean_value': [104, 117, 123],
+        'force_color':True,
         'resize_param': {
                 'prob': 1,
                 'resize_mode': P.Resize.WARP,
@@ -305,7 +318,7 @@ elif normalization_mode == P.Loss.FULL:
   base_lr *= 2000.
 
 # Evaluate on whole test set.
-num_test_image = 1024
+num_test_image = 11869
 test_batch_size = 1
 # Ideally test_batch_size should be divisible by num_test_image,
 # otherwise mAP will be slightly off the true value.
@@ -316,11 +329,11 @@ solver_param = {
     'base_lr': base_lr,
     'weight_decay': 0.0005,
     'lr_policy': "multistep",
-    'stepvalue': [80000, 140000, 200000],
+    'stepvalue': [500000, 700000, 900000],
     'gamma': 0.1,
     'momentum': 0.9,
     'iter_size': iter_size,
-    'max_iter': 200000,
+    'max_iter': 1000000,
     'snapshot': 10000,
     'display': 10,
     'average_loss': 10,
@@ -331,7 +344,7 @@ solver_param = {
     'snapshot_after_train': True,
     # Test parameters
     'test_iter': [test_iter],
-    'test_interval': 1000,
+    'test_interval': 10000,
     'eval_type': "detection",
     'ap_version': "11point",
     'test_initialization': False,

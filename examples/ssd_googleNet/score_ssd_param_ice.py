@@ -18,19 +18,33 @@ current_dir = os.getcwd()
 caffe_root = current_dir#osp.join(current_dir, '..')
 
 #######################Custom-Configured Data#####################
-gpus = "3"
+gpus = "2"
+dupallclass = False
+min_ratio = 15
+nms_thresh = 0.3
+batch_size = 1
+pretrain_fromraw = True
+job_id = gpus
 resize_height = 300
 resize_width = 300
 use_batchnorm = True
-batch_size = 1
+
 accum_batch_size = 1
 train_on_diff_gt = False
 neg_pos_ratio = 3.0
 
+loc_weight = 1
+num_classes = 5
 ##################################################################
-train_data = '{}/data/rts2017/rtsDevkit/rts2017/lmdb/rts2017_trainval_lmdb'.format(caffe_root)
-test_data = '{}/data/rts2017/rtsDevkit/rts2017/lmdb/rts2017_test_lmdb'.format(caffe_root)
-label_map_file = '{}/data/rts2017/labelmap_rts.prototxt'.format(caffe_root)
+# rts data
+if dupallclass:
+    train_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_dupallnew/rtscoco2017_trainval_lmdb'.format(caffe_root)
+    test_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb_dupallnew/rtscoco2017_test_lmdb'.format(caffe_root)
+else:
+    train_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb/rtscoco2017_trainval_lmdb'.format(caffe_root)
+    test_data = '{}/data/rtscoco2017/rtsDevkit/rtscoco2017/lmdb/rtscoco2017_test_lmdb'.format(caffe_root)
+
+label_map_file = '{}/data/rtscoco2017/labelmap_rts.prototxt'.format(caffe_root)
 output_result_dir = "{}/result/ssd_googlenet_bn_score".format(caffe_root)
 timestr = strftime("%Y-%m-%d-%H-%M-%S", gmtime())
 job_name = "SSD_rts_{}x{}_score".format(resize_width, resize_height)
@@ -49,12 +63,21 @@ make_dir_if_not_exists(save_dir)
 #trained by Tian Yu
 #pretrain_model = "E:/code/caffe/modelzoo/xiaoice-ssd-rts/GOOGLE_SSD_300x300_2017-06-27-10-59-12_iter_100000.caffemodel".format(caffe_root)
 #trained by Tian Yu (rts+coco)
-pretrain_model = "E:/code/caffe/modelzoo/xiaoice-ssd-rts-coco/GOOGLE_SSD_300x300_2017-06-30-10-13-08_iter_200000.caffemodel".format(caffe_root)
+#pretrain_model = "E:/code/caffe/modelzoo/xiaoice-ssd-rts-coco/GOOGLE_SSD_300x300_2017-06-30-10-13-08_iter_200000.caffemodel".format(caffe_root)
+#trained by keche (rts+coco+dup selfie)
+#pretrain_model = "E:/code/caffe/modelzoo/xiaoice-ssd-rts-coco-selfie-good/GOOGLE_SSD_rts_300x300_2017-07-25_1_iter_550000.caffemodel".format(caffe_root)
+#trained by Tianyu (rts+coco+dup selfie)
+#pretrain_model = "E:/code/caffe/modelzoo/xiaoice-ssd-rts-coco-selfie-better/GOOGLE_SSD_300x300_2017-07-17-03-55-45_gpu0_iter_400000.caffemodel".format(caffe_root)
+#trined by keche (trs+coco+dup all)
+#pretrain_model = "E:/code/caffe/caffe_ssd_windows/models/GoogleNet/SSD_rts_300x300_2017-07-25_0/GOOGLE_SSD_rts_300x300_2017-07-21_0_iter_320000.caffemodel".format(caffe_root)
+#trined by keche (trs+coco+4classes)
+pretrain_model = "E:/code/caffe/caffe_ssd_windows/models/GoogleNet/SSD_rts_300x300_2017-09-19_0/GOOGLE_SSD_rts_300x300_2017-09-19_0_iter_670000.caffemodel".format(caffe_root)
 
+name_size_file = "data/rtscoco2017/test_name_size.txt"
 resume_training = False
 mbox_source_layers = ['inception_4a_output', 'inception_4c_output', 'inception_4e_output', 'inception_5b_output', 'inception_6a_output', 'inception_7a_output']
 
-min_ratio = 20
+#min_ratio = 15
 max_ratio = 90
 step = int(math.floor((max_ratio - min_ratio) / (len(mbox_source_layers) - 2)))
 min_sizes = []
@@ -63,19 +86,27 @@ min_dim = max(resize_height, resize_width)
 for ratio in xrange(min_ratio, max_ratio + 1, step):
     min_sizes.append(min_dim * ratio / 100.)
     max_sizes.append(min_dim * (ratio + step) / 100.)
-min_sizes = [min_dim * 10 / 100.] + min_sizes
-max_sizes = [min_dim * 20 / 100.] + max_sizes
+
+# if min_ratio == 15:
+#     min_sizes = [min_dim * 7 / 100.] + min_sizes
+#     max_sizes = [min_dim * 15 / 100.] + max_sizes
+# else:
+#     min_sizes = [min_dim * 10 / 100.] + min_sizes
+#     max_sizes = [min_dim * 20 / 100.] + max_sizes
+
+min_sizes = [min_dim * ((min_ratio)/2) / 100.] + min_sizes
+max_sizes = [min_dim * min_ratio / 100.] + max_sizes
 
 aspect_ratios = [[2], [2, 3], [2, 3], [2, 3], [2], [2]]
 aspect_ratios_flip = True
 prior_variance = [0.1, 0.1, 0.2, 0.2]
 
-loc_weight = 1 
-num_classes = 18
+
 share_location = True
 background_label_id = 0
 code_type = P.PriorBox.CENTER_SIZE
 normalization_mode = P.Loss.VALID
+ignore_cross_boundary_bbox = False
 
 multibox_loss_param = {
     'loc_loss_type': P.MultiBoxLoss.SMOOTH_L1,
@@ -91,7 +122,8 @@ multibox_loss_param = {
     'mining_type': P.MultiBoxLoss.HARD_EXAMPLE,
     'neg_pos_ratio': neg_pos_ratio,
     'neg_overlap': 0.5,
-    'code_type': code_type
+    'code_type': code_type,
+    'ignore_cross_boundary_bbox': ignore_cross_boundary_bbox,
     }
 loss_param = {
     'normalization': normalization_mode,
@@ -116,6 +148,7 @@ loss_param = {
 train_transform_param = {
         'mirror': True,
         'mean_value': [104, 117, 123],
+        'force_color': True,
         'resize_param': {
                 'prob': 1,
                 'resize_mode': P.Resize.WARP,
@@ -129,6 +162,23 @@ train_transform_param = {
                         P.Resize.LANCZOS4,
                         ],
                 },
+        'distort_param': {
+            'brightness_prob': 0.5,
+            'brightness_delta': 32,
+            'contrast_prob': 0.5,
+            'contrast_lower': 0.5,
+            'contrast_upper': 1.5,
+            'hue_prob': 0.5,
+            'hue_delta': 18,
+            'saturation_prob': 0.5,
+            'saturation_lower': 0.5,
+            'saturation_upper': 1.5,
+            'random_order_prob': 0.0,
+        },
+        # 'expand_param': {
+        #     'prob': 0.5,
+        #     'max_expand_ratio': 2.0,
+        # },
         'emit_constraint': {
         'emit_type': caffe_pb2.EmitConstraint.MIN_OVERLAP,
         'emit_overlap': 0.3,
@@ -273,7 +323,7 @@ elif normalization_mode == P.Loss.FULL:
   base_lr *= 2000.
 
 # Evaluate on whole test set.
-num_test_image = 512
+num_test_image = 1024
 test_batch_size = 1
 # Ideally test_batch_size should be divisible by num_test_image,
 # otherwise mAP will be slightly off the true value.
@@ -311,12 +361,13 @@ det_out_param = {
     'num_classes': num_classes,
     'share_location': share_location,
     'background_label_id': background_label_id,
-    'nms_param': {'nms_threshold': 0.2, 'top_k': 400},
+    'nms_param': {'nms_threshold': nms_thresh, 'top_k': 400},
     'save_output_param': {
         'output_directory': output_result_dir,
         'output_name_prefix': "comp4_det_test_",
         'output_format': "VOC",
         'label_map_file': label_map_file,
+        'name_size_file': name_size_file,
         'num_test_image': num_test_image,
         },
     'keep_top_k': 200,
@@ -330,6 +381,7 @@ det_eval_param = {
     'background_label_id': background_label_id,
     'overlap_threshold': 0.5,
     'evaluate_difficult_gt': False,
+    'name_size_file': name_size_file,
     }
 
 
