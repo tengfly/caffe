@@ -5,7 +5,9 @@
     find_package(NCCL)
     if (NCCL_FOUND)
         set(NCCL_EXTERNAL FALSE)
+		message(STATUS "Great! set NCCL_EXTERNAL FALSE)")
     else()
+		message(STATUS "download and install NCCL")
         # build directory
         set(nccl_PREFIX ${CMAKE_BINARY_DIR}/external/nccl-prefix)
         # install directory
@@ -27,6 +29,7 @@
 
         set(NCCL_INCLUDE_DIR ${nccl_INSTALL}/include)
         set(NCCL_LIBRARIES ${nccl_INSTALL}/lib/nccl.lib)
+		message(STATUS "Success! Download and install NCCL at (include: ${NCCL_INCLUDE_DIR}, library: ${NCCL_LIBRARIES})")
     endif()
   else()
     # default to find package on UNIX systems

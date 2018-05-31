@@ -111,7 +111,7 @@ GPUParams<Dtype>::~GPUParams() {
 }
 
 template<typename Dtype>
-void GPUParams<Dtype>::configure(Solver<Dtype>* solver) const {
+void GPUParams<Dtype>::Configure(Solver<Dtype>* solver) const {
   const vector<Blob<Dtype>*>& net =
       solver->net()->learnable_params();
   apply_buffers(net, data_, size_, replace_gpu);
@@ -483,7 +483,7 @@ P2PSync<Dtype>::P2PSync(shared_ptr<Solver<Dtype> > root_solver,
     solver_.reset(new WorkerSolver<Dtype>(param, root_solver.get()));
     Caffe::set_root_solver(true);
   }
-  this->configure(solver_.get());
+  this->Configure(solver_.get());
   solver_->add_callback(this);
 
   if (parent) {

@@ -2,6 +2,7 @@ set(NCCL_INC_PATHS
     /usr/include
     /usr/local/include
     $ENV{NCCL_DIR}/include
+	#E:/NCCL/include
     )
 
 set(NCCL_LIB_PATHS
@@ -12,6 +13,7 @@ set(NCCL_LIB_PATHS
     /usr/local/lib
     /usr/local/lib64
     $ENV{NCCL_DIR}/lib
+	#E:/NCCL/lib
     )
 
 find_path(NCCL_INCLUDE_DIR NAMES nccl.h PATHS ${NCCL_INC_PATHS})
@@ -21,6 +23,8 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(NCCL DEFAULT_MSG NCCL_INCLUDE_DIR NCCL_LIBRARIES)
 
 if (NCCL_FOUND)
-  message(STATUS "Found NCCL    (include: ${NCCL_INCLUDE_DIR}, library: ${NCCL_LIBRARIES})")
+  message(STATUS "Great! Found NCCL    (include: ${NCCL_INCLUDE_DIR}, library: ${NCCL_LIBRARIES})")
   mark_as_advanced(NCCL_INCLUDE_DIR NCCL_LIBRARIES)
+else()
+  message(STATUS "Sad! Not found NCCL")
 endif ()

@@ -777,8 +777,8 @@ namespace caffe {
 		const bool ignore_cross_boundary_bbox =
 			multibox_loss_param.ignore_cross_boundary_bbox();
 		// Find the matches.
-		int num = all_loc_preds.size();
-		for (int i = 0; i < num; ++i) {
+		int num = all_loc_preds.size(); //num is equal to the batch size
+		for (int i = 0; i < num; ++i) { // for each image in the batch
 			map<int, vector<int> > match_indices;
 			map<int, vector<float> > match_overlaps;
 			// Check if there is ground truth for current image.

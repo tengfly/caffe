@@ -5,6 +5,20 @@ set(Caffe_DEFINITIONS "")
 set(Caffe_COMPILE_OPTIONS "")
 
 # ---[ Boost
+if (USE_LATEST_BOOST) #Not use boost from pre-installed packages
+  if (NOT "$ENV{BOOST_INCLUDEDIR}" STREQUAL "")
+	message("Set BOOST_INCLUDEDIR as $ENV{BOOST_INCLUDEDIR}")
+	set(BOOST_INCLUDEDIR $ENV{BOOST_INCLUDEDIR})
+  endif()
+
+  if (NOT "$ENV{BOOST_LIBRARYDIR}" STREQUAL "")
+	message("Set BOOST_LIBRARYDIR as $ENV{BOOST_LIBRARYDIR}")
+	set(BOOST_LIBRARYDIR $ENV{BOOST_LIBRARYDIR})
+  endif()
+endif()
+message("BOOST_INCLUDEDIR: ${BOOST_INCLUDEDIR}")
+message("BOOST_LIBRARYDIR: ${BOOST_LIBRARYDIR}")
+
 find_package(Boost 1.54 REQUIRED COMPONENTS system thread filesystem)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
 list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)

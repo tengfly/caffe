@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.7)
+message(STATUS, "Enter CMakeLists.txt")
 if(MSVC)
   # CMake 3.4 introduced a WINDOWS_EXPORT_ALL_SYMBOLS target property that makes it possible to
   # build shared libraries without using the usual declspec() decoration.
@@ -38,8 +39,8 @@ include(cmake/TargetResolvePrerequesites.cmake)
 
 # ---[ Options
 caffe_option(CPU_ONLY  "Build Caffe without CUDA support" OFF) # TODO: rename to USE_CUDA
-caffe_option(USE_CUDNN "Build Caffe with cuDNN library support" ON IF NOT CPU_ONLY)
-caffe_option(USE_NCCL "Build Caffe with NCCL library support" OFF)
+caffe_option(USE_CUDNN "Build Caffe with cuDNN library support" OFF) #ON IF NOT CPU_ONLY)
+caffe_option(USE_NCCL "Build Caffe with NCCL library support" ON)
 if(MSVC)
   # default to static libs
   caffe_option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -59,6 +60,7 @@ caffe_option(USE_OPENMP "Link with OpenMP (when your BLAS wants OpenMP and you g
 caffe_option(protobuf_MODULE_COMPATIBLE "Make the protobuf-config.cmake compatible with the module mode" ON IF MSVC)
 caffe_option(COPY_PREREQUISITES "Copy the prerequisites next to each executable or shared library directory" ON IF MSVC)
 caffe_option(INSTALL_PREREQUISITES "Install the prerequisites next to each executable or shared library directory" ON IF MSVC)
+caffe_option(USE_LATEST_BOOST "Use laster boost version" ON IF MSVC)
 
 if(MSVC AND BUILD_SHARED_LIBS)
   if(CMAKE_GENERATOR MATCHES "Visual Studio")

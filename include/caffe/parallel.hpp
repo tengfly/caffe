@@ -56,7 +56,7 @@ class GPUParams : public Params<Dtype> {
   GPUParams(shared_ptr<Solver<Dtype> > root_solver, int device);
   virtual ~GPUParams();
 
-  void configure(Solver<Dtype>* solver) const;
+  void Configure(Solver<Dtype>* solver) const;
 
  protected:
   using Params<Dtype>::size_;
